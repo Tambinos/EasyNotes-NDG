@@ -34,6 +34,21 @@ jobs:
         run: |
           docker build -t ghcr.io/tambinos/easy-notes:latest .
 
+      # Run the Docker container to test if it works
+      - name: Run Docker container and test
+        run: |
+          docker run -d --name easy-notes-container ghcr.io/tambinos/easy-notes:latest
+          
+          # Wait for the container to initialize (adjust timing if needed)
+          sleep 10
+          
+          # Run a basic health check (modify if your container needs a specific check)
+          docker exec easy-notes-container curl -f http://localhost || exit 1
+          
+          # Clean up: Stop and remove the container
+          docker stop easy-notes-container
+          docker rm easy-notes-container
+
       # Push the image to GHCR
       - name: Push the Docker image to GHCR
         run: |
