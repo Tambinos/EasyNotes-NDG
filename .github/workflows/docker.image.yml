@@ -32,9 +32,9 @@ jobs:
       # Build the Docker image
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/tambinos/hellom210:latest .
+          docker build -t ghcr.io/tambinos/easy-notes:latest .
 
       # Push the image to GHCR
       - name: Push the Docker image to GHCR
         run: |
-          docker push ghcr.io/tambinos/hellom210:latest
+          docker push ghcr.io/tambinos/easy-notes:latest
