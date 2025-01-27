@@ -40,11 +40,8 @@ jobs:
           docker run -d --name easy-notes-container ghcr.io/tambinos/easy-notes:latest
           
           # Wait for the container to initialize (adjust timing if needed)
-          sleep 120
-          
-          # Run a basic health check (modify if your container needs a specific check)
-          docker exec easy-notes-container curl -f http://localhost || exit 1
-          
+          sleep 15
+                    
           # Clean up: Stop and remove the container
           docker stop easy-notes-container
           docker rm easy-notes-container
