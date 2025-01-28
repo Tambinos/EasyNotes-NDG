@@ -76,14 +76,14 @@ jobs:
 
       # Download the saved Docker image artifact from the build job
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
           name: easy-notes-tarball
 
       # Load the Docker image
       - name: Load Docker image
         run: |
-          docker load -i $IMAGE_NAME
+          docker load -i $IMAGE_FILE
 
       # Create Docker network
       - name: Create Docker network
@@ -149,7 +149,7 @@ jobs:
 
       # Download the Docker image artifact from the build job
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
           name: easy-notes-tarball
 
