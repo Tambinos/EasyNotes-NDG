@@ -40,12 +40,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
 
-      # Convert image name and version tag to lowercase
-      - name: Convert image name and tag to lowercase
-        run: |
-          export IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
-          export VERSION_TAG_LOWER=$(echo $VERSION_TAG | tr '[:upper:]' '[:lower:]')
-
       # Build the Docker image
       - name: Build the Docker image
         run: |
