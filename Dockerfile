@@ -1,37 +1,23 @@
-# Verwenden des offiziellen Node.js Images als Grundlage
-FROM node:16
+# Node slim Image als Grundlage verwenden
+FROM node:21-slim
 
-# 2. Einen neuen Benutzer erstellen
-RUN useradd -ms /bin/bash appuser
+# Den Quellcode in das Image kopieren
+COPY --chown=node:node . /
 
-# 3. Installiere sudo und füge den Benutzer zur sudo-Gruppe hinzu
-RUN apt-get update && apt-get install -y sudo \
-    && usermod -aG sudo appuser
-
-# 4. Das Arbeitsverzeichnis erstellen und Rechte setzen
-RUN mkdir -p /app && chown -R appuser:appuser /app
-
-# 5. Auf diesen Benutzer wechseln
-USER appuser
-
-# 6. Arbeitsverzeichnis auf /app setzen
-WORKDIR /app
-
-# 7. Den Quellcode kopieren
-COPY . .
-
-# 8. Alle npm Pakete installieren
+# Die benötigten NPM-Pakete installieren
 RUN npm install
 
-# 9. Easy-Notes bauen
-RUN npm run build
+# Die Applikation erstellen (Typescript in Javascript "kompilieren")
+RUN npm run build && rm -r src
 
-# 10. Port festlegen (z.B. 8080)
+# Das Arbeitsverzeichniss auf dist setzen
+WORKDIR /dist
+
+# Die Applikation soll auf Port 8080 hören
 EXPOSE 8080
 
-# 11. Arbeitsverzeichnis auf das /app/dist Verzeichnis wechseln
-WORKDIR /app/dist
+# Auf User node wechseln. Dieser User is bereits im Image vorhanden und hat eingeschränkte Rechte
+USER node
 
-# 12. Die Node-Applikation ausführen
-CMD ["node", "index.js"]
-
+# Die Applikation ausführen
+CMD [ "node", "app.js" ]
