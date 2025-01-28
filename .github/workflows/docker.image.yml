@@ -1,4 +1,4 @@
-name: Build, Test, and Push Docker Image
+name: Build, Test, and Deploy Docker Image
 
 on:
   push:
@@ -9,19 +9,24 @@ on:
       - main  # Trigger on pull request to main
 
 jobs:
-  build-test-and-push:
+  build:
     runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:19.03.12-dind  # Docker-in-Docker service
+        options: --privileged
     env:
       MYSQL_DATABASE: 'easynotes'
       MYSQL_USER: 'dbuser'
       MYSQL_PASSWORD: 'password2023'
-    
+      IMAGE_NAME: 'easy-notes'
+      VERSION_TAG: '1.0.0'  # You can adjust this for each release
     steps:
       # Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up Docker Buildx (for advanced Docker build)
+      # Set up Docker Buildx for advanced Docker builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -36,49 +41,125 @@ jobs:
       # Build the Docker image
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/tambinos/easy-notes:latest .
+          docker build -t ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG .
+          docker save -o $IMAGE_NAME.tar ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
 
-      # Run the Docker container to test if it works
-      - name: Run Docker container and test
+      # Save the Docker image tarball as an artifact
+      - name: Save Docker image artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: $IMAGE_NAME-tarball
+          path: $IMAGE_NAME.tar
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      docker:
+        image: docker:19.03.12-dind
+        options: --privileged
+    env:
+      MYSQL_DATABASE: 'easynotes'
+      MYSQL_USER: 'dbuser'
+      MYSQL_PASSWORD: 'password2023'
+      IMAGE_NAME: 'easy-notes'
+      VERSION_TAG: '1.0.0'
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Load the saved Docker image artifact
+      - name: Load Docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: $IMAGE_NAME-tarball
+
+      - name: Load Docker image from tarball
         run: |
-          # Create a network for communication between containers
-          docker network create net-easynotes
+          docker load -i $IMAGE_NAME.tar
 
-          # Pull the latest MySQL image and start a MariaDB container for the test
-          docker pull mysql:latest
-          docker run --name mysql-container --network net-easynotes -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=$MYSQL_DATABASE -e MYSQL_USER=$MYSQL_USER -e MYSQL_PASSWORD=$MYSQL_PASSWORD -d mysql
+      # Create a Docker network for communication between containers
+      - name: Create Docker network
+        run: docker network create net-easynotes
 
-          # Wait for MySQL to fully initialize (increase wait time if necessary)
-          echo "Waiting for MySQL to initialize..."
-          sleep 30  # Increased sleep time for MySQL startup
+      # Start MySQL container
+      - name: Start MySQL container
+        run: |
+          docker run -d --name mysql-container --network net-easynotes \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -e MYSQL_DATABASE=$MYSQL_DATABASE \
+            -e MYSQL_USER=$MYSQL_USER \
+            -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
+            mysql:latest
 
-          # Ensure SQL dump file is present and import it into MySQL
-          if [ -f "$(pwd)/easy-notes-dump.sql" ]; then
-            docker exec -i mysql-container mysql -u $MYSQL_USER -p$MYSQL_PASSWORD -h mysql-container $MYSQL_DATABASE < $(pwd)/easy-notes-dump.sql
-          else
-            echo "SQL dump file not found!"
-            exit 1
-          fi
+      # Wait for MySQL to initialize
+      - name: Wait for MySQL to initialize
+        run: sleep 30  # Adjust this value if MySQL takes more time to initialize
 
-          # Start the EasyNotes container in the background and connect it to the created network
-          docker run -d --name easy-notes-container --network net-easynotes ghcr.io/tambinos/easy-notes:latest
+      # Start EasyNotes container and connect it to the database
+      - name: Start EasyNotes container
+        run: |
+          docker run -d --name easy-notes-container --network net-easynotes \
+            -e MYSQL_DATABASE=$MYSQL_DATABASE \
+            -e MYSQL_USER=$MYSQL_USER \
+            -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
+            ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
 
-          # Wait for the container to initialize (increase sleep time if necessary)
-          echo "Waiting for EasyNotes container to initialize..."
-          sleep 30  # Increased sleep time for EasyNotes startup
-
-          # Test if the application works using curl from a test container
+      # Create an Alpine container with curl to test the service
+      - name: Test EasyNotes with curl
+        run: |
           docker run -d --name easynotes-test --network net-easynotes alpine:latest /bin/sh -c "sleep infinity"
           docker exec easynotes-test /bin/sh -c "apk add --no-cache curl"
           docker exec easynotes-test curl http://easy-notes-container:8080 -f || exit 1
 
-          # Clean up: Stop and remove the containers after testing
+      # Clean up containers and network
+      - name: Clean up containers and network
+        run: |
           docker stop easy-notes-container mysql-container easynotes-test
           docker rm easy-notes-container mysql-container easynotes-test
           docker network rm net-easynotes
 
-      # Push the image to GHCR
-      - name: Push the Docker image to GHCR
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      IMAGE_NAME: 'easy-notes'
+      VERSION_TAG: '1.0.0'
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Log in to GitHub Container Registry (GHCR)
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.TOKEN }}
+
+      # Load the Docker image artifact from the build job
+      - name: Load Docker image from build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: $IMAGE_NAME-tarball
+
+      - name: Load Docker image
         run: |
-          docker push ghcr.io/tambinos/easy-notes:latest
+          docker load -i $IMAGE_NAME.tar
+
+      # Push the Docker image with the version tag
+      - name: Push Docker image with version tag
+        run: |
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
+
+      # Push the Docker image with the latest tag
+      - name: Push Docker image with latest tag
+        run: |
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
+
+      # Log out from GitHub Container Registry
+      - name: Logout from GHCR
+        run: docker logout ghcr.io
 
