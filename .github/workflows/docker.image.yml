@@ -59,7 +59,7 @@ jobs:
           docker run -d --name easy-notes-container --network net-easynotes ghcr.io/tambinos/easy-notes:latest
 
           # Wait for the container to initialize (adjust timing if needed)
-          sleep 15
+          sleep 30
 
           # Test if the application works using curl
           docker run --rm --network net-easynotes curlimages/curl:latest -f http://easy-notes-container:8080
