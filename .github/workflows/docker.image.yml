@@ -88,7 +88,7 @@ jobs:
       # Create Docker network
       - name: Create Docker network
         run:  docker network create net-easynotes
-oc
+
       # Start MySQL container
       - name: Start MySQL container
         run: |
