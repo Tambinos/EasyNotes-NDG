@@ -57,6 +57,7 @@ jobs:
 
           # Start the EasyNotes container in the background and connect it to the created network
           docker run -d --name easy-notes-container --network net-easynotes ghcr.io/tambinos/easy-notes:latest
+          docker start easy-note-container
 
           # Wait for the container to initialize (adjust timing if needed)
           sleep 15
