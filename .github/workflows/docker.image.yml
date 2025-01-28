@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # Trigger on push to the main branch
+    tags:
+      - '*'
   pull_request:
     branches:
       - main  # Trigger on pull request to main
@@ -20,7 +22,7 @@ jobs:
       MYSQL_USER: 'dbuser'
       MYSQL_PASSWORD: 'password2023'
       IMAGE_NAME: 'easy-notes'
-      VERSION_TAG: '1.0.0'  # You can adjust this for each release
+      VERSION_TAG: '${{ github.ref }}'  # Dynamically get the tag name
     steps:
       # Checkout the code from the repository
       - name: Checkout code
@@ -38,18 +40,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
 
+      # Convert image name and version tag to lowercase
+      - name: Convert image name and tag to lowercase
+        run: |
+          export IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+          export VERSION_TAG_LOWER=$(echo $VERSION_TAG | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=$IMAGE_NAME_LOWER" >> $GITHUB_ENV
+          echo "VERSION_TAG=$VERSION_TAG_LOWER" >> $GITHUB_ENV
+
       # Build the Docker image
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG .
-          docker save -o $IMAGE_NAME.tar ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
+          docker build -t ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER .
+          docker save -o $IMAGE_NAME_LOWER.tar ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER
 
       # Save the Docker image tarball as an artifact
       - name: Save Docker image artifact
         uses: actions/upload-artifact@v4
         with:
-          name: $IMAGE_NAME-tarball
-          path: $IMAGE_NAME.tar
+          name: $IMAGE_NAME_LOWER-tarball
+          path: $IMAGE_NAME_LOWER.tar
 
   test:
     runs-on: ubuntu-latest
@@ -73,11 +83,11 @@ jobs:
       - name: Load Docker image
         uses: actions/download-artifact@v2
         with:
-          name: $IMAGE_NAME-tarball
+          name: $IMAGE_NAME_LOWER-tarball
 
       - name: Load Docker image from tarball
         run: |
-          docker load -i $IMAGE_NAME.tar
+          docker load -i $IMAGE_NAME_LOWER.tar
 
       # Create a Docker network for communication between containers
       - name: Create Docker network
@@ -104,7 +114,7 @@ jobs:
             -e MYSQL_DATABASE=$MYSQL_DATABASE \
             -e MYSQL_USER=$MYSQL_USER \
             -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
-            ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
+            ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER
 
       # Create an Alpine container with curl to test the service
       - name: Test EasyNotes with curl
@@ -143,21 +153,21 @@ jobs:
       - name: Load Docker image from build artifact
         uses: actions/download-artifact@v2
         with:
-          name: $IMAGE_NAME-tarball
+          name: $IMAGE_NAME_LOWER-tarball
 
       - name: Load Docker image
         run: |
-          docker load -i $IMAGE_NAME.tar
+          docker load -i $IMAGE_NAME_LOWER.tar
 
       # Push the Docker image with the version tag
       - name: Push Docker image with version tag
         run: |
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER
 
       # Push the Docker image with the latest tag
       - name: Push Docker image with latest tag
         run: |
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:latest
 
       # Log out from GitHub Container Registry
       - name: Logout from GHCR
