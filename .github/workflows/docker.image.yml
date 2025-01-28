@@ -45,8 +45,8 @@ jobs:
         run: |
           export IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
           export VERSION_TAG_LOWER=$(echo $VERSION_TAG | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE_NAME=$IMAGE_NAME_LOWER" >> $GITHUB_ENV
-          echo "VERSION_TAG=$VERSION_TAG_LOWER" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME_LOWER" >> easy-notes
+          echo "VERSION_TAG=$VERSION_TAG_LOWER" >> latest
 
       # Build the Docker image
       - name: Build the Docker image
