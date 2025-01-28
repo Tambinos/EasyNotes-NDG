@@ -78,7 +78,7 @@ jobs:
 
       # Load the saved Docker image artifact
       - name: Load Docker image
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: $IMAGE_NAME-tarball
 
@@ -148,7 +148,7 @@ jobs:
 
       # Load the Docker image artifact from the build job
       - name: Load Docker image from build artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: $IMAGE_NAME-tarball
 
