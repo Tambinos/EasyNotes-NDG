@@ -24,7 +24,7 @@ jobs:
     steps:
       # Checkout the code from the repository
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       # Set up Docker Buildx for advanced Docker builds
       - name: Set up Docker Buildx
@@ -46,7 +46,7 @@ jobs:
 
       # Save the Docker image tarball as an artifact
       - name: Save Docker image artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: $IMAGE_NAME-tarball
           path: $IMAGE_NAME.tar
