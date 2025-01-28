@@ -1,23 +1,30 @@
-# Node slim Image als Grundlage verwenden
-FROM node:21-slim
+#Verwenden des offiziellen Node.js Images als Grundlage
+FROM node:16
 
-# Den Quellcode in das Image kopieren
-COPY --chown=node:node . /
+# 2. Einen neuen Benutzer erstellen (oder vorhandenen Benutzer verwenden)
+# Erstelle einen Benutzer namens 'appuser' (optional)
+RUN useradd -ms /bin/bash appuser
 
-# Die benötigten NPM-Pakete installieren
+# 3. Auf diesen Benutzer wechseln
+USER appuser
+
+# 4. Arbeitsverzeichnis auf /app setzen
+WORKDIR /app
+
+# 5. Den Quellcode kopieren
+COPY . .
+
+# 6. Alle npm Pakete installieren
 RUN npm install
 
-# Die Applikation erstellen (Typescript in Javascript "kompilieren")
-RUN npm run build && rm -r src
+# 7. Easy-Notes bauen
+RUN npm run build
 
-# Das Arbeitsverzeichniss auf dist setzen
-WORKDIR /dist
-
-# Die Applikation soll auf Port 8080 hören
+# 8. Port festlegen (z.B. 8080)
 EXPOSE 8080
 
-# Auf User node wechseln. Dieser User is bereits im Image vorhanden und hat eingeschränkte Rechte
-USER node
+# 9. Arbeitsverzeichnis auf das /app/dist Verzeichnis wechseln
+WORKDIR /app/dist
 
-# Die Applikation ausführen
-CMD [ "node", "app.js" ]
+# 10. Die Node-Applikation ausführen
+CMD ["node", "index.js"]
