@@ -65,6 +65,7 @@ jobs:
  	  docker run -d --name easynotes-test --network net-easynotes alpine:latest /bin/sh -c "sleep infinity"
  	  docker exec easynotes-test /bin/sh -c "apk add --no-cache curl"
 	  docker exec easynotes-test curl http://easynotes:8080 -f
+
           # Clean up: Stop and remove the containers after testing
           docker stop easy-notes-container mysql-container
           docker rm easy-notes-container mysql-container
