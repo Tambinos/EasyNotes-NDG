@@ -50,20 +50,19 @@ jobs:
 
           # Wait for MySQL to fully initialize
           echo "Waiting for MySQL to initialize..."
-          sleep 15  # Increase this sleep time if necessary, or use a more reliable method for waiting.
+          sleep 30  # Increase this sleep time if necessary, or use a more reliable method for waiting.
 
           # Import the SQL dump into the MySQL database (if applicable)
           docker exec -i mysql-container mysql -u $MYSQL_USER -p$MYSQL_PASSWORD -h mysql-container $MYSQL_DATABASE < $(pwd)/easy-notes-dump.sql
 
           # Start the EasyNotes container in the background and connect it to the created network
           docker run -d --name easy-notes-container --network net-easynotes ghcr.io/tambinos/easy-notes:latest
-          docker start easy-note-container
 
           # Wait for the container to initialize (adjust timing if needed)
           sleep 15
 
           # Test if the application works using curl
-          docker exec easy-notes-container curl -f http://easy-notes-container:8080
+          docker run --rm --network net-easynotes curlimages/curl:latest -f http://easy-notes-container:8080
 
           # Clean up: Stop and remove the containers after testing
           docker stop easy-notes-container mysql-container
