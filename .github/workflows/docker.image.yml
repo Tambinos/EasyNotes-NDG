@@ -112,18 +112,12 @@ jobs:
             -e "DB_USERNAME=easynotes" -e "DB_PASSWORD=easynotes" -p 8080:8080 \
             $REGISTRY_PATH/$IMAGE_NAME:$VERSION_TAG
 
-      # Test the application with curl
-   #  - name: Test EasyNotes with curl
-   #     run: |
-   #       docker run --rm -d --name easynotes-test --network net-easynotes alpine:latest /bin/sh -c "sleep infinity"
-   #       docker exec easynotes-test /bin/sh -c "apk add --no-cache curl"
-   #       docker exec easynotes-test curl http://easynotes:8080 -f || exit 1
+      - name: Test EasyNotes with curl
+        run: |
+          docker run --rm -d --name easynotes-test --network net-easynotes alpine:latest /bin/sh -c "sleep infinity"
+          docker exec easynotes-test /bin/sh -c "apk add --no-cache curl"
+          docker exec easynotes-test curl http://easynotes:8080 -f || exit 1
 
-      # Clean up
-#      - name: Clean up containers and network
- #       run: |
-  #        docker stop easynotes-db easynotes easynotes-test
-   #       docker network rm net-easynotes
 
   # Deploy Job
   deploy:
