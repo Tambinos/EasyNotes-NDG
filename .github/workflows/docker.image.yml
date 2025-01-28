@@ -120,10 +120,10 @@ jobs:
    #       docker exec easynotes-test curl http://easynotes:8080 -f || exit 1
 
       # Clean up
-      - name: Clean up containers and network
-        run: |
-          docker stop easynotes-db easynotes easynotes-test
-          docker network rm net-easynotes
+#      - name: Clean up containers and network
+ #       run: |
+  #        docker stop easynotes-db easynotes easynotes-test
+   #       docker network rm net-easynotes
 
   # Deploy Job
   deploy:
