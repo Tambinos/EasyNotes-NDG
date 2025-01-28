@@ -46,7 +46,6 @@ jobs:
           docker build -t $REGISTRY_PATH/$IMAGE_NAME:$IMAGE_VERSION -t $REGISTRY_PATH/$IMAGE_NAME:latest .
     	  docker save -o $IMAGE_FILE $REGISTRY_PATH/$IMAGE_NAME:latest
 
-
       # Upload the image tarball as an artifact for the next job
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v4
