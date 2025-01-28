@@ -45,21 +45,19 @@ jobs:
         run: |
           export IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
           export VERSION_TAG_LOWER=$(echo $VERSION_TAG | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE_NAME=$IMAGE_NAME_LOWER" >> easy-notes
-          echo "VERSION_TAG=$VERSION_TAG_LOWER" >> latest
 
       # Build the Docker image
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER .
-          docker save -o $IMAGE_NAME_LOWER.tar ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER
+          docker build -t ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG .
+          docker save -o $IMAGE_NAME.tar ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
 
       # Save the Docker image tarball as an artifact
       - name: Save Docker image artifact
         uses: actions/upload-artifact@v4
         with:
-          name: $IMAGE_NAME_LOWER-tarball
-          path: $IMAGE_NAME_LOWER.tar
+          name: $IMAGE_NAME-tarball
+          path: $IMAGE_NAME.tar
 
   test:
     runs-on: ubuntu-latest
@@ -83,11 +81,11 @@ jobs:
       - name: Load Docker image
         uses: actions/download-artifact@v2
         with:
-          name: $IMAGE_NAME_LOWER-tarball
+          name: $IMAGE_NAME-tarball
 
       - name: Load Docker image from tarball
         run: |
-          docker load -i $IMAGE_NAME_LOWER.tar
+          docker load -i $IMAGE_NAME.tar
 
       # Create a Docker network for communication between containers
       - name: Create Docker network
@@ -153,21 +151,21 @@ jobs:
       - name: Load Docker image from build artifact
         uses: actions/download-artifact@v2
         with:
-          name: $IMAGE_NAME_LOWER-tarball
+          name: $IMAGE_NAME-tarball
 
       - name: Load Docker image
         run: |
-          docker load -i $IMAGE_NAME_LOWER.tar
+          docker load -i $IMAGE_NAME.tar
 
       # Push the Docker image with the version tag
       - name: Push Docker image with version tag
         run: |
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
 
       # Push the Docker image with the latest tag
       - name: Push Docker image with latest tag
         run: |
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:latest
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
 
       # Log out from GitHub Container Registry
       - name: Logout from GHCR
