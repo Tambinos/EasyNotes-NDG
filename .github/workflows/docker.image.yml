@@ -111,11 +111,11 @@ jobs:
             -e "DB_USERNAME=easynotes" -e "DB_PASSWORD=easynotes" -p 8080:8080 \
             $REGISTRY_PATH/$IMAGE_NAME:$VERSION_TAG
 
-      # Test EasyNotes with curl
       - name: Test EasyNotes with curl
-        run: |
-          docker exec -u 0 easynotes /bin/sh -c "apt update && apt install -y curl"
-          docker exec easynotes curl http://easynotes:8080 -f || exit 1
+  	run: |
+    	  docker exec -u 0 easynotes /bin/sh -c "apt update && apt install --no-install-recommends -y curl"
+    	  docker exec easynotes curl http://easynotes:8080 -f || exit 1
+
 
   # Deploy Job
   deploy:
