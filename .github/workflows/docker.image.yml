@@ -39,37 +39,35 @@ jobs:
           docker build -t ghcr.io/tambinos/easy-notes:latest .
 
       # Run the Docker container to test if it works
-      # Run the Docker container to test if it works
-- name: Run Docker container and test
-  run: |
-    # Create a network for communication between containers
-    docker network create net-easynotes
+      - name: Run Docker container and test
+        run: |
+          # Create a network for communication between containers
+          docker network create net-easynotes
 
-    # Pull the latest MySQL image and start a MariaDB container for the test
-    docker pull mysql:latest
-    docker run --name mysql-container --network net-easynotes -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=$MYSQL_DATABASE -e MYSQL_USER=$MYSQL_USER -e MYSQL_PASSWORD=$MYSQL_PASSWORD -d mysql
+          # Pull the latest MySQL image and start a MariaDB container for the test
+          docker pull mysql:latest
+          docker run --name mysql-container --network net-easynotes -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=$MYSQL_DATABASE -e MYSQL_USER=$MYSQL_USER -e MYSQL_PASSWORD=$MYSQL_PASSWORD -d mysql
 
-    # Wait for MySQL to fully initialize
-    echo "Waiting for MySQL to initialize..."
-    sleep 30  # Increase this sleep time if necessary, or use a more reliable method for waiting.
+          # Wait for MySQL to fully initialize
+          echo "Waiting for MySQL to initialize..."
+          sleep 30  # Increase this sleep time if necessary, or use a more reliable method for waiting.
 
-    # Import the SQL dump into the MySQL database (if applicable)
-    docker exec -i mysql-container mysql -u $MYSQL_USER -p$MYSQL_PASSWORD -h mysql-container $MYSQL_DATABASE < $(pwd)/easy-notes-dump.sql
+          # Import the SQL dump into the MySQL database (if applicable)
+          docker exec -i mysql-container mysql -u $MYSQL_USER -p$MYSQL_PASSWORD -h mysql-container $MYSQL_DATABASE < $(pwd)/easy-notes-dump.sql
 
-    # Start the EasyNotes container in the background and connect it to the created network
-    docker run -d --name easy-notes-container --network net-easynotes ghcr.io/tambinos/easy-notes:latest
+          # Start the EasyNotes container in the background and connect it to the created network
+          docker run -d --name easy-notes-container --network net-easynotes ghcr.io/tambinos/easy-notes:latest
 
-    # Wait for the container to initialize (adjust timing if needed)
-    sleep 15
+          # Wait for the container to initialize (adjust timing if needed)
+          sleep 15
 
-    # Test if the application works using curl
-    docker run --rm --network net-easynotes curlimages/curl:latest -f http://easy-notes-container:8080
+          # Test if the application works using curl
+          docker run --rm --network net-easynotes curlimages/curl:latest -f http://easy-notes-container:8080
 
-    # Clean up: Stop and remove the containers after testing
-    docker stop easy-notes-container mysql-container
-    docker rm easy-notes-container mysql-container
-    docker network rm net-easynotes
-
+          # Clean up: Stop and remove the containers after testing
+          docker stop easy-notes-container mysql-container
+          docker rm easy-notes-container mysql-container
+          docker network rm net-easynotes
 
       # Push the image to GHCR
       - name: Push the Docker image to GHCR
