@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: easy-notes-tarball
-          path: $IMAGE_FILE
+          path: $IMAGE_NAME
 
   # Test Job
   test:
@@ -83,7 +83,7 @@ jobs:
       # Load the Docker image
       - name: Load Docker image
         run: |
-          docker load -i $IMAGE_FILE
+          docker load -i $IMAGE_NAME
 
       # Create Docker network
       - name: Create Docker network
@@ -145,7 +145,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.TOKEN }}
 
       # Download the Docker image artifact from the build job
       - name: Download Docker image artifact
