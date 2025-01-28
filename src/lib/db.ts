@@ -58,11 +58,11 @@ async function queryDB(sql: string, params: any) {
  */
 function getDBConfig() {
   const dbConfig = {
-    host: process.env.DB_HOST || '127.0.0.1',
-    port: process.env.DB_PORT || '3306',
-    name: process.env.DB_NAME || 'easynotes',
-    user: process.env.DB_USER || 'easynotes',
-    password: process.env.DB_PASS || 'easynotes',
+    host: 'localhost',
+    port: '3306',
+    name: 'easynotes',
+    user: 'dbuser',
+    password: 'dbpassword',
   };
 
   return dbConfig;
