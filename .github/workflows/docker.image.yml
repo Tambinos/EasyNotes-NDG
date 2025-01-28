@@ -114,7 +114,7 @@ jobs:
       # Test EasyNotes with curl
       - name: Test EasyNotes with curl
         run: |
-          docker exec -u 0 easynotes /bin/sh -c "apt update && apt install -y curl"
+	  docker exec -u 0 easynotes /bin/sh -c "apk update && apk add curl"
           docker exec easynotes curl http://easynotes:8080 -f || exit 1
 
   # Deploy Job
