@@ -48,7 +48,7 @@ jobs:
 
       # Upload the image tarball as an artifact for the next job
       - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: easy-notes-tarball
           path: ${{ env.IMAGE_FILE }}  # Use ${{ env.IMAGE_FILE }} instead of $IMAGE_FILE
@@ -76,7 +76,7 @@ jobs:
 
       # Download the saved Docker image artifact from the build job
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: easy-notes-tarball
 
@@ -149,7 +149,7 @@ jobs:
 
       # Download the Docker image artifact from the build job
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: easy-notes-tarball
 
