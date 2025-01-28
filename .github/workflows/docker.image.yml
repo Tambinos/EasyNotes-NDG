@@ -87,8 +87,8 @@ jobs:
 
       # Create Docker network
       - name: Create Docker network
-        run: docker network create net-easynotes
-
+        run:  docker network create net-easynotes
+oc
       # Start MySQL container
       - name: Start MySQL container
         run: |
@@ -114,9 +114,8 @@ jobs:
 
       - name: Test EasyNotes with curl
         run: |
-          docker run --rm -d --name easynotes-test --network net-easynotes alpine:latest /bin/sh -c "sleep infinity"
-          docker exec easynotes-test /bin/sh -c "apk add --no-cache curl"
-          docker exec easynotes-test curl http://easynotes:8080 -f || exit 1
+          docker exec easynotes /bin/sh -c "apk add --no-cache curl"
+          docker exec easynotes curl http://easynotes:8080 -f || exit 1
 
 
   # Deploy Job
