@@ -40,11 +40,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
 
+      # Convert the repository name to lowercase
+      - name: Convert repository name to lowercase
+        id: convert_repo
+        run: echo "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       # Build the Docker image
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG .
-          docker save -o $IMAGE_NAME.tar ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
+          docker build -t ghcr.io/${{ env.REPO_NAME }}/$IMAGE_NAME:$VERSION_TAG .
+          docker save -o $IMAGE_NAME.tar ghcr.io/${{ env.REPO_NAME }}/$IMAGE_NAME:$VERSION_TAG
 
       # Save the Docker image tarball as an artifact
       - name: Save Docker image artifact
@@ -106,7 +111,7 @@ jobs:
             -e MYSQL_DATABASE=$MYSQL_DATABASE \
             -e MYSQL_USER=$MYSQL_USER \
             -e MYSQL_PASSWORD=$MYSQL_PASSWORD \
-            ghcr.io/${{ github.repository }}/$IMAGE_NAME_LOWER:$VERSION_TAG_LOWER
+            ghcr.io/${{ env.REPO_NAME }}/$IMAGE_NAME:$VERSION_TAG
 
       # Create an Alpine container with curl to test the service
       - name: Test EasyNotes with curl
@@ -154,12 +159,12 @@ jobs:
       # Push the Docker image with the version tag
       - name: Push Docker image with version tag
         run: |
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION_TAG
+          docker push ghcr.io/${{ env.REPO_NAME }}/$IMAGE_NAME:$VERSION_TAG
 
       # Push the Docker image with the latest tag
       - name: Push Docker image with latest tag
         run: |
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
+          docker push ghcr.io/${{ env.REPO_NAME }}/$IMAGE_NAME:latest
 
       # Log out from GitHub Container Registry
       - name: Logout from GHCR
