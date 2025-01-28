@@ -55,7 +55,7 @@ jobs:
       - name: Save Docker image artifact
         uses: actions/upload-artifact@v4
         with:
-          name: $IMAGE_NAME-tarball
+          name: easy-notes-tarball  # Fixed the artifact name to avoid variable issues
           path: $IMAGE_NAME.tar
 
   test:
@@ -78,9 +78,9 @@ jobs:
 
       # Load the saved Docker image artifact
       - name: Load Docker image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
-          name: $IMAGE_NAME-tarball
+          name: easy-notes-tarball  # Use the same fixed name as in the build step
 
       - name: Load Docker image from tarball
         run: |
@@ -148,9 +148,9 @@ jobs:
 
       # Load the Docker image artifact from the build job
       - name: Load Docker image from build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
-          name: $IMAGE_NAME-tarball
+          name: easy-notes-tarball  # Use the same fixed name as in the build step
 
       - name: Load Docker image
         run: |
