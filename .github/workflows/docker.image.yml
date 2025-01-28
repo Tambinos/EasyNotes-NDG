@@ -62,7 +62,7 @@ jobs:
           sleep 30
 
           # Test if the application works using curl
-          docker run --rm --network net-easynotes curlimages/curl:latest -f http://easy-notes-container:8080
+          docker run --rm --network net-easynotes curlimages/curl:latest -f http://debian:8080
 
           # Clean up: Stop and remove the containers after testing
           docker stop easy-notes-container mysql-container
