@@ -11,7 +11,10 @@ on:
 jobs:
   build-test-and-push:
     runs-on: ubuntu-latest
-    
+    variables:
+    	MYSQL_DATABASE: 'easynotes'
+    	MYSQL_USER: 'dbuser'
+    	MYSQL_PASSWORD: 'password2023'    
     steps:
       # Checkout the code from the repository
       - name: Checkout code
@@ -37,12 +40,22 @@ jobs:
       # Run the Docker container to test if it works
       - name: Run Docker container and test
         run: |
+          # Netzwerk erstellen
+    	  docker network create net-easynotes
+    	  # MariaDB Image pullen und Datenbank Container fÃ¼r den Test starten.
+    	  docker pull mysql:latest
+	  docker run --name mysql-container -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=easynotes -e MYSQL_USER=dbuser -e MYSQL_PASSWORD=dbpassword -d mysql
+	  docker exec -i mysql-container mysql -u dbuser -pdbpassword easynotes < $(pwd)/easy-notes-dump.sql
+          # Start the EasyNotes container in the background
           docker run -d --name easy-notes-container ghcr.io/tambinos/easy-notes:latest
           
           # Wait for the container to initialize (adjust timing if needed)
           sleep 15
-                    
-          # Clean up: Stop and remove the container
+          
+          # Test if the application works using curl
+          docker run --rm --network host curlimages/curl:latest -f http://localhost:8080
+          
+          # Clean up: Stop and remove the container after testing
           docker stop easy-notes-container
           docker rm easy-notes-container
 
@@ -50,3 +63,4 @@ jobs:
       - name: Push the Docker image to GHCR
         run: |
           docker push ghcr.io/tambinos/easy-notes:latest
+
