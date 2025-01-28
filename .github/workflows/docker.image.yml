@@ -48,10 +48,10 @@ jobs:
 
       # Upload the image tarball as an artifact for the next job
       - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: easy-notes-tarball
-          path: $IMAGE_FILE
+          path: ${{ env.IMAGE_FILE }}  # Use ${{ env.IMAGE_FILE }} instead of $IMAGE_FILE
 
   # Test Job
   test:
@@ -83,7 +83,7 @@ jobs:
       # Load the Docker image
       - name: Load Docker image
         run: |
-          docker load -i $IMAGE_FILE
+          docker load -i ${{ env.IMAGE_FILE }}  # Use ${{ env.IMAGE_FILE }} to properly resolve the environment variable
 
       # Create Docker network
       - name: Create Docker network
@@ -156,7 +156,7 @@ jobs:
       # Load the Docker image
       - name: Load Docker image
         run: |
-          docker load -i $IMAGE_FILE
+          docker load -i ${{ env.IMAGE_FILE }}
 
       # Push Docker image to GitHub Container Registry with version tag
       - name: Push Docker image with version tag
