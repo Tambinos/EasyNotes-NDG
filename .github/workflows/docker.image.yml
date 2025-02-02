@@ -106,7 +106,7 @@ jobs:
       # Start EasyNotes container
       - name: Start EasyNotes container
         run: |
-          docker run -d --rm --network net-easynotes --name easynotes --memory=4g\
+          docker run -d --rm --network net-easynotes --name easynotes --memory=8g\
             -e "DB_PORT=3306" -e "DB_HOST=easynotes-db" -e "DB_NAME=easynotes" \
             -e "DB_USERNAME=easynotes" -e "DB_PASSWORD=easynotes" -p 8080:8080 \
             $REGISTRY_PATH/$IMAGE_NAME:$VERSION_TAG
